@@ -31,6 +31,7 @@ typedef struct Node
 Node *expr();
 Node *term();
 Node *mul();
+Node *unary();
 
 char *user_input;
 
@@ -92,12 +93,12 @@ Node *expr() {
 }
 
 Node *mul() {
-    Node *node = term();
+    Node *node = unary();
     for (;;) {
         if (consume('*'))
-            node = new_node('*', node, mul());
+            node = new_node('*', node, unary());
         else if (consume('/'))
-            node = new_node('/', node, mul());
+            node = new_node('/', node, unary());
         else 
             return node;
     }
@@ -115,6 +116,14 @@ Node *term() {
         return new_node_num(tokens[pos++].val);
 
     error_at(tokens[pos].input, "数値でも開きカッコでもないトークンです");
+}
+
+Node *unary() {
+    if (consume('+'))
+        return term();
+    if (consume('-'))
+        return new_node('-', new_node_num(0), term());
+    return term();
 }
 
 void gen(Node *node) {
